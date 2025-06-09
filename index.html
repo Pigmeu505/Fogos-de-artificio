@@ -217,10 +217,16 @@
     function generateTextParticles(text) {
       textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
 
-      // Aumenta o tamanho da fonte no celular e desktop
+      // Começa com um tamanho de fonte grande
       let fontSize = Math.min(textCanvas.width, textCanvas.height) / (window.innerWidth < 600 ? 6 : 12);
-
       textCtx.font = `bold ${fontSize}px Arial`;
+
+      // Ajusta para caber na largura da tela
+      while (textCtx.measureText(text).width > textCanvas.width * 0.9 && fontSize > 10) {
+        fontSize -= 1;
+        textCtx.font = `bold ${fontSize}px Arial`;
+      }
+
       textCtx.fillStyle = 'white';
       textCtx.textAlign = 'center';
       textCtx.textBaseline = 'middle';
