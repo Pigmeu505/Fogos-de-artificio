@@ -50,11 +50,15 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: #ff0066;
+      background: #53b6ff;
       color: white;
-      box-shadow: 0 0 20px #ff0066;
+      box-shadow: 0 0 20px #53b6ff;
       max-width: 90vw;
       transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #4fd2c6;
     }
 
     @media (max-width: 600px) {
@@ -66,10 +70,22 @@
       .social-icons .icon {
         font-size: 8vw;
       }
+      .container {
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -30%);
+        width: 98vw;
+      }
     }
 
-    button:hover {
-      background: #e6005c;
+    @media (max-width: 400px) {
+      button {
+        font-size: 6vw;
+        padding: 4vw 2vw;
+      }
+      .social-icons .icon {
+        font-size: 10vw;
+      }
     }
 
     .social-icons {
@@ -114,6 +130,7 @@
   </style>
 </head>
 <body>
+  <canvas id="ledCanvas"></canvas>
   <canvas id="fireworksCanvas"></canvas>
   <canvas id="textCanvas"></canvas>
 
@@ -129,175 +146,156 @@
   </div>
 
   <script>
-    const canvas = document.getElementById('fireworksCanvas');
-    const ctx = canvas.getContext('2d');
+    const ledCanvas = document.getElementById('ledCanvas');
+    const ledCtx = ledCanvas.getContext('2d');
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const fireworksCtx = fireworksCanvas.getContext('2d');
     const textCanvas = document.getElementById('textCanvas');
     const textCtx = textCanvas.getContext('2d');
-    let particles = [];
-    let textParticles = [];
-    let interval;
-    let timeout;
 
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      ledCanvas.width = window.innerWidth;
+      ledCanvas.height = window.innerHeight;
+      fireworksCanvas.width = window.innerWidth;
+      fireworksCanvas.height = window.innerHeight;
       textCanvas.width = window.innerWidth;
       textCanvas.height = window.innerHeight;
+      drawLed();
     }
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    class Particle {
-      constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.radius = Math.random() * 2 + 1;
-        this.color = color;
-        this.speed = Math.random() * 5 + 2;
-        this.angle = Math.random() * Math.PI * 2;
-        this.alpha = 1;
-        this.gravity = 0.05;
-      }
-
-      update() {
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed + this.gravity;
-        this.alpha -= 0.02;
-      }
-
-      draw(ctx) {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.restore();
-      }
+    // LED azul suave
+    function drawLed() {
+      ledCtx.clearRect(0, 0, ledCanvas.width, ledCanvas.height);
+      const centerX = ledCanvas.width / 2;
+      const centerY = ledCanvas.height / 2;
+      const radius = Math.min(ledCanvas.width, ledCanvas.height) * 0.45;
+      const gradient = ledCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      gradient.addColorStop(0, 'rgba(80,180,255,0.25)');
+      gradient.addColorStop(1, 'rgba(80,180,255,0)');
+      ledCtx.beginPath();
+      ledCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ledCtx.fillStyle = gradient;
+      ledCtx.fill();
     }
 
-    class TextParticle {
-      constructor(x, y) {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.destX = x;
-        this.destY = y;
-        this.radius = 2.5;
-        this.color = '#00fff0';
-      }
-
-      update() {
-        this.x += (this.destX - this.x) * 0.05;
-        this.y += (this.destY - this.y) * 0.05;
-      }
-
-      draw(ctx) {
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 10);
-        gradient.addColorStop(0, '#00fff0');
-        gradient.addColorStop(1, this.color);
-
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius + 1, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.shadowColor = '#00fff0';
-        ctx.shadowBlur = 15;
-        ctx.fill();
-      }
-    }
-
+    // FOGOS DE ARTIFÍCIO
+    let particles = [];
     function createFirework(x, y) {
-      const colors = ['#ff0044', '#00ffcc', '#ffff00', '#ff9900', '#00ccff'];
+      const colors = ['#53b6ff', '#4fd2c6', '#fff', '#aeefff'];
       for (let i = 0; i < 50; i++) {
         const color = colors[Math.floor(Math.random() * colors.length)];
-        particles.push(new Particle(x, y, color));
+        particles.push({
+          x: x,
+          y: y,
+          radius: Math.random() * 2 + 1,
+          color: color,
+          speed: Math.random() * 5 + 2,
+          angle: Math.random() * Math.PI * 2,
+          alpha: 1,
+          gravity: 0.05
+        });
       }
     }
 
-    function generateTextParticles(text) {
-      textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-
-      const isMobile = window.innerWidth < 600;
-      let fontSize = Math.min(textCanvas.width, textCanvas.height) / (isMobile ? 7.5 : 12);
-      textCtx.font = `bold ${fontSize}px Arial`;
-
-      // Ajusta para caber na largura da tela, mas não deixa menor que 18px no mobile
-      const minFont = isMobile ? 18 : 10;
-      const widthLimit = isMobile ? 0.98 : 0.9;
-      while (textCtx.measureText(text).width > textCanvas.width * widthLimit && fontSize > minFont) {
-        fontSize -= 1;
-        textCtx.font = `bold ${fontSize}px Arial`;
+    function animateFireworks() {
+      fireworksCtx.globalAlpha = 0.2;
+      fireworksCtx.fillStyle = 'black';
+      fireworksCtx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+      fireworksCtx.globalAlpha = 1;
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed + p.gravity;
+        p.alpha -= 0.015;
+        fireworksCtx.save();
+        fireworksCtx.globalAlpha = Math.max(p.alpha, 0);
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        fireworksCtx.fillStyle = p.color;
+        fireworksCtx.shadowColor = p.color;
+        fireworksCtx.shadowBlur = 10;
+        fireworksCtx.fill();
+        fireworksCtx.restore();
+        if (p.alpha <= 0) particles.splice(i, 1);
       }
-
-      textCtx.fillStyle = 'white';
-      textCtx.textAlign = 'center';
-      textCtx.textBaseline = 'middle';
-      textCtx.fillText(text, textCanvas.width / 2, textCanvas.height / 2);
-
-      // Stroke leve para destacar o texto
-      textCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      textCtx.lineWidth = 3;
-      textCtx.strokeText(text, textCanvas.width / 2, textCanvas.height / 2);
-
-      const imageData = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height);
-      textParticles = [];
-
-      for (let y = 0; y < textCanvas.height; y += 5) {
-        for (let x = 0; x < textCanvas.width; x += 5) {
-          const index = (y * textCanvas.width + x) * 4;
-          if (imageData.data[index + 3] > 150) { // só pixels mais opacos
-            textParticles.push(new TextParticle(x, y));
-          }
-        }
-      }
+      requestAnimationFrame(animateFireworks);
     }
+    animateFireworks();
 
-    function animate() {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let fadeTextFrame = null;
+    function showText(text) {
+      if (fadeTextFrame) {
+        cancelAnimationFrame(fadeTextFrame);
+        fadeTextFrame = null;
+      }
+      let opacity = 0;
+      const duration = 1800; // ms
+      const start = performance.now();
 
-      particles.forEach((p, i) => {
-        p.update();
-        p.draw(ctx);
-        if (p.alpha <= 0) {
-          particles.splice(i, 1);
+      function drawText(op) {
+        textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+        const isMobile = window.innerWidth < 600;
+        let fontSize = Math.min(textCanvas.width, textCanvas.height) / (isMobile ? 7.5 : 12);
+        fontSize = Math.max(fontSize, isMobile ? 18 : 24);
+        fontSize = Math.min(fontSize, isMobile ? 40 : 80);
+        textCtx.font = `bold ${fontSize}px Arial, Helvetica, sans-serif`;
+        const minFont = isMobile ? 18 : 10;
+        const widthLimit = isMobile ? 0.98 : 0.9;
+        while (textCtx.measureText(text).width > textCanvas.width * widthLimit && fontSize > minFont) {
+          fontSize -= 1;
+          textCtx.font = `bold ${fontSize}px Arial, Helvetica, sans-serif`;
         }
-      });
+        textCtx.save();
+        textCtx.globalAlpha = op;
+        textCtx.fillStyle = 'white';
+        textCtx.textAlign = 'center';
+        textCtx.textBaseline = 'middle';
+        textCtx.fillText(text, textCanvas.width / 2, textCanvas.height / 2);
+        textCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        textCtx.lineWidth = 3;
+        textCtx.strokeText(text, textCanvas.width / 2, textCanvas.height / 2);
+        textCtx.restore();
+      }
 
-      textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-      textParticles.forEach(p => {
-        p.update();
-        p.draw(textCtx);
-      });
-
-      requestAnimationFrame(animate);
+      function fadeIn(now) {
+        let progress = (now - start) / duration;
+        if (progress > 1) progress = 1;
+        opacity = progress;
+        drawText(opacity);
+        if (progress < 1) {
+          fadeTextFrame = requestAnimationFrame(fadeIn);
+        } else {
+          fadeTextFrame = null;
+        }
+      }
+      fadeTextFrame = requestAnimationFrame(fadeIn);
     }
 
     function resetAll() {
-      particles = [];
-      textParticles = [];
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (fadeTextFrame) {
+        cancelAnimationFrame(fadeTextFrame);
+        fadeTextFrame = null;
+      }
       textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-      if (interval) clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
     }
 
     function startFireworks() {
       resetAll();
-
-      interval = setInterval(() => {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height / 2;
+      let count = 0;
+      const interval = setInterval(() => {
+        const x = Math.random() * fireworksCanvas.width;
+        const y = Math.random() * fireworksCanvas.height * 0.6;
         createFirework(x, y);
-      }, 300);
-
-      timeout = setTimeout(() => {
-        clearInterval(interval);
-        generateTextParticles("Me siga para mais <3");
-      }, 4000);
+        count++;
+        if (count > 12) clearInterval(interval);
+      }, 250);
+      showText("Siga para mais <3");
     }
 
-    animate();
   </script>
 </body>
 </html>
+
