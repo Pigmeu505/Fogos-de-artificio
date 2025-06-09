@@ -45,8 +45,8 @@
     }
 
     button {
-      padding: 4vw 8vw;
-      font-size: 5vw;
+      padding: 3vw 6vw;
+      font-size: 4vw;
       border: none;
       border-radius: 10px;
       cursor: pointer;
@@ -55,6 +55,17 @@
       box-shadow: 0 0 20px #ff0066;
       max-width: 90vw;
       transition: background 0.3s ease;
+    }
+
+    @media (max-width: 600px) {
+      button {
+        font-size: 5vw;
+        padding: 3vw 4vw;
+        max-width: 96vw;
+      }
+      .social-icons .icon {
+        font-size: 8vw;
+      }
     }
 
     button:hover {
@@ -113,8 +124,8 @@
   </div>
 
   <div class="social-icons">
-    <a href="https://instagram.com/seu_usuario" target="_blank" class="icon instagram"><i class="fab fa-instagram"></i></a>
-    <a href="https://github.com/seu_usuario" target="_blank" class="icon github"><i class="fab fa-github"></i></a>
+    <a href="https://instagram.com/" target="_blank" class="icon instagram"><i class="fab fa-instagram"></i></a>
+    <a href="https://github.com/" target="_blank" class="icon github"><i class="fab fa-github"></i></a>
   </div>
 
   <script>
@@ -274,7 +285,7 @@
 
       timeout = setTimeout(() => {
         clearInterval(interval);
-        generateTextParticles("Seja bem-vindo!");
+        generateTextParticles("Me siga para mais <3");
       }, 4000);
     }
 
