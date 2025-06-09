@@ -113,8 +113,8 @@
   </div>
 
   <div class="social-icons">
-    <a href="https://instagram.com/" target="_blank" class="icon instagram"><i class="fab fa-instagram"></i></a>
-    <a href="https://github.com/" target="_blank" class="icon github"><i class="fab fa-github"></i></a>
+    <a href="https://instagram.com/seu_usuario" target="_blank" class="icon instagram"><i class="fab fa-instagram"></i></a>
+    <a href="https://github.com/seu_usuario" target="_blank" class="icon github"><i class="fab fa-github"></i></a>
   </div>
 
   <script>
@@ -172,8 +172,8 @@
         this.y = Math.random() * canvas.height;
         this.destX = x;
         this.destY = y;
-        this.radius = 1.5;
-        this.color = '#00ffcc';
+        this.radius = 2.5;
+        this.color = '#00fff0';
       }
 
       update() {
@@ -182,15 +182,15 @@
       }
 
       draw(ctx) {
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 8);
-        gradient.addColorStop(0, '#ffffff');
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 10);
+        gradient.addColorStop(0, '#00fff0');
         gradient.addColorStop(1, this.color);
 
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.radius + 1, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00fff0';
+        ctx.shadowBlur = 15;
         ctx.fill();
       }
     }
@@ -205,23 +205,28 @@
 
     function generateTextParticles(text) {
       textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
-      let fontSize = Math.min(textCanvas.width, textCanvas.height) / 12;
+
+      // Aumenta o tamanho da fonte no celular e desktop
+      let fontSize = Math.min(textCanvas.width, textCanvas.height) / (window.innerWidth < 600 ? 6 : 12);
+
       textCtx.font = `bold ${fontSize}px Arial`;
       textCtx.fillStyle = 'white';
       textCtx.textAlign = 'center';
-      textCtx.fillText(text, textCanvas.width / 2, textCanvas.height / 2 + fontSize / 2);
+      textCtx.textBaseline = 'middle';
+      textCtx.fillText(text, textCanvas.width / 2, textCanvas.height / 2);
 
-      textCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      textCtx.lineWidth = 2;
-      textCtx.strokeText(text, textCanvas.width / 2, textCanvas.height / 2 + fontSize / 2);
+      // Stroke leve para destacar o texto
+      textCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      textCtx.lineWidth = 3;
+      textCtx.strokeText(text, textCanvas.width / 2, textCanvas.height / 2);
 
       const imageData = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height);
       textParticles = [];
 
-      for (let y = 0; y < textCanvas.height; y += 6) {
-        for (let x = 0; x < textCanvas.width; x += 6) {
+      for (let y = 0; y < textCanvas.height; y += 5) {
+        for (let x = 0; x < textCanvas.width; x += 5) {
           const index = (y * textCanvas.width + x) * 4;
-          if (imageData.data[index + 3] > 128) {
+          if (imageData.data[index + 3] > 150) { // só pixels mais opacos
             textParticles.push(new TextParticle(x, y));
           }
         }
