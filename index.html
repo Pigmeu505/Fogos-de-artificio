@@ -38,23 +38,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 0 10px;
+      width: 100%;
+      max-width: 600px;
     }
 
     .button-container {
       margin-bottom: 20px;
+      width: 100%;
     }
 
     button {
-      padding: 4vw 8vw;
-      font-size: 5vw;
+      width: 100%;
+      max-width: 400px;
+      padding: 1.2rem 2.4rem;
+      font-size: 1.8rem;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       background: #ff0066;
       color: white;
       box-shadow: 0 0 20px #ff0066;
-      max-width: 90vw;
       transition: background 0.3s ease;
+      user-select: none;
     }
 
     button:hover {
@@ -67,15 +73,18 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 30px;
+      gap: 2rem;
       z-index: 5;
+      padding: 0 10px;
     }
 
     .social-icons .icon {
-      font-size: 6vw;
+      font-size: 4.5vw;
+      max-font-size: 30px;
       color: white;
       text-decoration: none;
       transition: transform 0.3s, color 0.3s;
+      user-select: none;
     }
 
     .social-icons .icon:hover {
@@ -90,10 +99,12 @@
       color: #999;
     }
 
+    /* Ajustes para desktop */
     @media (min-width: 768px) {
       button {
         font-size: 24px;
         padding: 15px 30px;
+        max-width: 300px;
       }
 
       .social-icons .icon {
@@ -206,9 +217,10 @@
     function generateTextParticles(text) {
       textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
 
-      // Aumenta o tamanho da fonte no celular e desktop
-      let fontSize = Math.min(textCanvas.width, textCanvas.height) / (window.innerWidth < 600 ? 6 : 12);
-
+      // Ajuste dinâmico da fonte para responsividade
+      let baseSize = window.innerWidth < 600 ? 60 : 120;
+      let fontSize = Math.min(baseSize, textCanvas.width / (text.length * 0.6));
+      
       textCtx.font = `bold ${fontSize}px Arial`;
       textCtx.fillStyle = 'white';
       textCtx.textAlign = 'center';
@@ -226,7 +238,7 @@
       for (let y = 0; y < textCanvas.height; y += 5) {
         for (let x = 0; x < textCanvas.width; x += 5) {
           const index = (y * textCanvas.width + x) * 4;
-          if (imageData.data[index + 3] > 150) { // só pixels mais opacos
+          if (imageData.data[index + 3] > 150) {
             textParticles.push(new TextParticle(x, y));
           }
         }
